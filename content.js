@@ -22,29 +22,37 @@ function waitForElement(selector) {
 function shakeCursor() {
   const cursor = document.createElement('div');
   cursor.style.cssText = `
-    width: 20px;
-    height: 20px;
+    width: 30px;
+    height: 30px;
     background: red;
     border-radius: 50%;
     position: fixed;
     top: 50%;
     left: 50%;
-    z-index: 9999;
+    z-index: 99999;
     pointer-events: none;
+    box-shadow: 0 0 10px rgba(255,0,0,0.5);
+    transition: transform 0.1s ease-out;
   `;
   document.body.appendChild(cursor);
 
   let angle = 0;
-  const radius = 20;
+  const radius = 30;
   const interval = setInterval(() => {
-    angle += 0.2;
-    cursor.style.transform = `translate(${Math.cos(angle) * radius}px, ${Math.sin(angle) * radius}px)`;
-  }, 20);
+    angle += 0.3;
+    cursor.style.transform = `translate(${Math.cos(angle) * radius}px, ${Math.sin(angle) * radius}px) scale(${1 + Math.sin(angle) * 0.2})`;
+  }, 16);
 
+  // Play for longer and fade out
   setTimeout(() => {
+    cursor.style.transition = 'all 0.5s ease-out';
+    cursor.style.opacity = '0';
+    cursor.style.transform = 'scale(0)';
     clearInterval(interval);
-    document.body.removeChild(cursor);
-  }, 2000);
+    setTimeout(() => {
+      document.body.removeChild(cursor);
+    }, 500);
+  }, 3000);
 }
 
 async function autoJoinMeet() {
@@ -74,5 +82,9 @@ window.addEventListener('load', autoJoinMeet);
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === 'shake') {
     shakeCursor();
+  } else if (message.action === 'ping') {
+    // Respond to ping to indicate content script is ready
+    sendResponse({ status: 'ready' });
   }
+  return true; // Required for async response
 });
