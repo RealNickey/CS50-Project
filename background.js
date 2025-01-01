@@ -35,3 +35,18 @@ chrome.tabs.onActivated.addListener((activeInfo) => {
     }
   });
 });
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.action === 'switchToMeet') {
+    chrome.tabs.query({ url: '*://meet.google.com/*' }, (tabs) => {
+      if (tabs && tabs.length > 0) {
+        const meetTab = tabs[0];
+        chrome.windows.update(meetTab.windowId, { focused: true }, () => {
+          chrome.tabs.update(meetTab.id, { active: true }, () => {
+            chrome.tabs.sendMessage(meetTab.id, { action: 'shake' });
+          });
+        });
+      }
+    });
+  }
+});
