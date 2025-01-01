@@ -47,3 +47,32 @@ function shakeCursor() {
   }, 2000);
 }
 
+async function autoJoinMeet() {
+  // Mute microphone
+  const micButton = await waitForElement('button[aria-label*="microphone"]');
+  if (micButton.getAttribute('data-is-muted') === 'false') {
+    micButton.click();
+  }
+
+  // Turn off camera
+  const cameraButton = await waitForElement('button[aria-label*="camera"]');
+  if (cameraButton.getAttribute('data-is-muted') === 'false') {
+    cameraButton.click();
+  }
+
+  // Join meeting
+  const joinButton = await waitForElement('button[aria-label*="Join now"]');
+  if (joinButton) {
+    joinButton.click();
+  }
+}
+
+// Start the process when page loads
+window.addEventListener('load', autoJoinMeet);
+
+// Listen for messages from background script
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.action === 'shake') {
+    shakeCursor();
+  }
+});
